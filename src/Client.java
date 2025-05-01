@@ -1,13 +1,20 @@
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.Socket;
 import java.util.Random;
+import java.util.Scanner;
 
 public class Client {
     private static UI ui;
     public static void main(String[] args) {
+
         ui = new UI();
         ui.initUI();
+
     }
+
 }
 
 class UI {
@@ -74,6 +81,9 @@ class CartPanel extends JPanel {
 }
 
 class LoginPanel extends JPanel {
+    private JTextField usernameField;
+    private JPasswordField passwordField;
+
     public LoginPanel() {
         setLayout(new BorderLayout());
         JLabel label = new JLabel("Login");
@@ -83,14 +93,16 @@ class LoginPanel extends JPanel {
         main.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
-        JTextField usernameField = new JTextField();
-        JPasswordField passwordField = new JPasswordField();
+        usernameField = new JTextField();
+        passwordField = new JPasswordField();
         usernameField.setPreferredSize(new Dimension(100, 20));
         passwordField.setPreferredSize(new Dimension(100, 20));
         JLabel usernameLabel = new JLabel("Username");
         JLabel passwordLabel = new JLabel("Password");
         JButton loginButton = new JButton("Login");
-
+        loginButton.addActionListener(e -> {
+            connectToServer("localhost");
+        });
         gbc.gridx = 0;
         gbc.gridy = 0;
         main.add(usernameLabel, gbc);
@@ -107,5 +119,21 @@ class LoginPanel extends JPanel {
         main.add(loginButton, gbc);
         add(main, BorderLayout.CENTER);
     }
+    public void connectToServer(String server) {
+        try {
+            Socket socket = new Socket(server, 8888);
+            PrintStream out = new PrintStream(socket.getOutputStream());
+            String username = usernameField.getText();
+            String password = new String(passwordField.getPassword());
+            out.println("LOGIN");
+            out.println(username);
+            out.println(password);
+            System.out.println("Sent login info to server: " + username);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "Connection failed: " + e.getMessage());
+            System.exit(1);
+        }
+    }
+
 
 }
